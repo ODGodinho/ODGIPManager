@@ -1,27 +1,13 @@
-import "reflect-metadata";
+export * from "./ConnectionTester";
 
-import { ContainerName } from "@enums";
+export * from "./core";
 
-import Container from "./app/Container";
+export * from "./test";
 
-const project = new Container();
+export * from "./rules";
 
-(async (): Promise<void> => {
-    await project.setUp();
+export type * from "./interfaces";
 
-    const kernel = project.get(ContainerName.Kernel);
-    await kernel.boot();
+export * from "./exceptions";
 
-    const service = await project.getAsync(ContainerName.ExampleService);
-    await service.execute();
-
-    await kernel.shutdown();
-})()
-    .then(() => process.exit(0))
-    .catch(async (exception) => {
-        const loggerName = project.isBound(ContainerName.Logger) ? ContainerName.Logger : ContainerName.ConsoleLogger;
-        if (!project.isBound(loggerName)) console.error(exception);
-        await project.getOptional(loggerName)?.error(exception);
-
-        process.exit(1);
-    });
+export * from "./helpers";

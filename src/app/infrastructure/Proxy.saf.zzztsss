@@ -1,0 +1,148 @@
+export class Proxy implements IpConnectionInterface {
+
+    private username: string | null = null;
+
+    public constructor(
+        private readonly proxy: ProxyInterface,
+        public readonly config: ConfigInterface<ConfigType>,
+        public readonly payload: Payload.Payload,
+        public readonly emissionHistory: EmissionHistoryInterface,
+        public readonly requester: MessageInterface,
+        public readonly container: BaseContainer,
+    ) {
+        this.refreshSession();
+    }
+
+    public static parseInlineProxy(
+        proxyInline: string,
+        container: BaseContainer,
+    ): Proxy {
+        const proxyUrl = new URL(proxyInline);
+        const proxyConfig: ProxyInterface = {
+            "name": "",
+            "host": proxyUrl.hostname,
+            "port": proxyUrl.port ? Number(proxyUrl.port) : undefined,
+            "auth": proxyUrl.username && proxyUrl.password
+                ? {
+                    "username": proxyUrl.username,
+                    "password": proxyUrl.password,
+                }
+                : undefined,
+            "protocol": proxyUrl.protocol.replace(":", ""),
+            "session": {
+                "type": SessionProxyType.OFF,
+                "separator": "",
+            },
+        };
+
+        return new Proxy(
+            proxyConfig,
+            container.get(ContainerName.Config),
+            container.get(ContainerName.Payload)!,
+            container.get(ContainerName.EmissionHistory),
+            container.get(ContainerName.RequestClient),
+            container,
+        );
+    }
+
+    public async connect(): Promise<void> {
+        // Not required;
+    }
+
+    public async disconnect(): Promise<void> {
+        // Not Action;
+    }
+
+    public async nextIp(): Promise<string> {
+        this.refreshSession();
+
+        return this.username!;
+    }
+
+    public async forceIp(ip: string): Promise<void> {
+        const session = this.container.get(ContainerName.IpManager).getIpIndex(ip);
+
+        if (session) {
+            this.username = getProxyUserName(this.proxy, true, session)!;
+            this.emissionHistory.currentIp = ip;
+        }
+    }
+
+    /**
+     * Return {protocol}://{user}:{pass}@{server}:{port}
+     *
+     * @returns {string}
+     */
+    public getInlineProxy(): string {
+        let proxyLogin = "";
+        const username = this.getUsername();
+        if (username) {
+            proxyLogin = `${username}:${this.proxy.auth!.password}@`;
+        }
+
+        return `${this.getFullProtocol()}${proxyLogin}${this.proxy.host}${this.getFullPort()}`;
+    }
+
+    public getMessageProxy(): ProxyConfigInterface {
+        return {
+            ...this.proxy,
+            auth: this.username && this.proxy.auth
+                ? {
+                    username: this.username,
+                    password: this.proxy.auth.password,
+                }
+                : undefined,
+        };
+    }
+
+    /**
+     * Return {protocol}:// or "" if there is no protocol
+     *
+     * @returns {string}
+     */
+    public getFullProtocol(): string {
+        return this.proxy.protocol ? `${this.proxy.protocol}://` : "";
+    }
+
+    /**
+     * Return :{port} or "" if there is no port
+     *
+     * @returns {string}
+     */
+    public getFullPort(): string {
+        return this.proxy.port ? `:${this.proxy.port}` : "";
+    }
+
+    /**
+     * Return full proxy host with protocol and port if there is one
+     * {protocol}://{host}:{port}
+     *
+     * @returns {string}
+     */
+    public getFullHost(): string {
+        return `${this.getFullProtocol()}${this.proxy.host}${this.getFullPort()}`;
+    }
+
+    public getUsername(): string | null {
+        return this.username;
+    }
+
+    public getPassword(): string | undefined {
+        return this.proxy.auth?.password;
+    }
+
+    public getName(): string {
+        return this.proxy.name;
+    }
+
+    /**
+     * Pega o proximo IP
+     *
+     * @returns {void}
+     */
+    private refreshSession(): void {
+        if (!this.proxy.auth) return;
+        this.username = getProxyUserName(this.proxy, true)!;
+    }
+
+}

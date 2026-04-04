@@ -1,7 +1,7 @@
 {
-    "name": "stanley-the-template-typescript",
+    "name": "@odg/health",
     "version": "0.0.0",
-    "description": "Stanley TheTemplate for typescript project",
+    "description": "Check the health of your system",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "homepage": "https://github.com/ODGodinho/Stanley-TheTemplate-Typescript",
@@ -54,31 +54,25 @@
     "author": "Dragons Gamers <https://www.linkedin.com/in/victor-alves-odgodinho>",
     "license": "MIT",
     "devDependencies": {
+        "@odg/axios": "^1.11.0",
         "@odg/eslint-config": "*",
         "@odg/tsconfig": "*",
         "@types/node": ">=22",
         "@vitest/coverage-istanbul": "^1",
         "concurrently": "^9.2.0",
-        "eslint": "*",
         "husky": "^9.1.7",
         "lint-staged": "^16.1.2",
         "rimraf": "*",
         "tsc-alias": "^1.8.16",
         "tsx": "^4.20.3",
         "typescript": "^5.8.3",
-        "vite-tsconfig-paths": "*",
+        "vite-tsconfig-paths": "^4",
         "vitest": "^1"
     },
     "dependencies": {
-        "@odg/axios": "^1.11.0",
-        "@odg/chemical-x": "^1.24.0",
-        "@odg/config": "^1.1.2",
-        "@odg/events": "^1.2.0",
-        "@odg/json-log": "^1.4.1",
-        "@odg/log": "^1.6.1",
-        "inversify": "^6",
-        "inversify-binding-decorators": "^4.0.0",
-        "reflect-metadata": "^0.2.2",
-        "zod": "^3.25.74"
+        "@odg/chemical-x": "^1.27.1",
+        "@odg/exception": "^1.7.1",
+        "@odg/message": "^1.10.0",
+        "http-status": "^1"
     }
 }
